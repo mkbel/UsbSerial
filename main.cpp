@@ -1,8 +1,9 @@
 /*
  * main.cpp
  *
- *  Created on: Jun 6, 2019
- *      Author: marek
+ *  Created on: Mar 4, 2008
+ *      Author: chmzc
+ *      https://forum.arduino.cc/index.php/topic,28167.0.html
  */
 
 
