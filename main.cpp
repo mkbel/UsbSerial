@@ -1,7 +1,7 @@
 /*
  * main.cpp
  *
- *  Created on: Mar 4, 2008
+ *  Created on: Mar 4, 2010
  *      Author: chmzc
  *      https://forum.arduino.cc/index.php/topic,28167.0.html
  */
@@ -15,26 +15,28 @@ using namespace std;
 
 void PrintError( LPCSTR str)
 {
-LPVOID lpMessageBuffer;
-int error = GetLastError();
-FormatMessage(
-FORMAT_MESSAGE_ALLOCATE_BUFFER |
-FORMAT_MESSAGE_FROM_SYSTEM,
-NULL,
-error,
-MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), //The user default language
-(LPTSTR) &lpMessageBuffer,
-0,
-NULL
-);
-printf("%s: (%d) %s\n\n",str,error,lpMessageBuffer);
-LocalFree( lpMessageBuffer );
+	LPVOID lpMessageBuffer;
+	int error = GetLastError();
+	FormatMessage(
+	FORMAT_MESSAGE_ALLOCATE_BUFFER |
+	FORMAT_MESSAGE_FROM_SYSTEM,
+	NULL,
+	error,
+	MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), //The user default language
+	(LPTSTR) &lpMessageBuffer,
+	0,
+	NULL
+	);
+	printf("%s: (%d) %s\n\n",str,error,lpMessageBuffer);
+	LocalFree( lpMessageBuffer );
 }
 
 int WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
+	cout << "Main entry\n";
+	cout.flush();
 	// open port for I/O
-	HANDLE h = CreateFile("com6",
+	HANDLE h = CreateFile("com7",
 	GENERIC_READ|GENERIC_WRITE,
 	0,NULL,
 	OPEN_EXISTING,0,NULL); // my adruino on com4 but this value can be read from argv
@@ -56,11 +58,9 @@ int WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		dcb.DCBlength = sizeof(dcb);
 		dcb.BaudRate = 115200;
 		dcb.fBinary = 1;
-		dcb.fDtrControl = DTR_CONTROL_ENABLE;
-		dcb.fRtsControl = RTS_CONTROL_ENABLE;
-		dcb.fOutxCtsFlow = 1;
-		dcb.fRtsControl = DTR_CONTROL_HANDSHAKE;
 		dcb.fDtrControl = DTR_CONTROL_DISABLE; // avoid reset of arduino board
+		dcb.fRtsControl = RTS_CONTROL_DISABLE;
+		dcb.fOutxCtsFlow = 0;
 		dcb.Parity = NOPARITY;
 		dcb.StopBits = ONESTOPBIT;
 		dcb.ByteSize = 8;
@@ -69,6 +69,20 @@ int WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		PrintError("E014_SetCommState failed");
 
 		char buf[8] = "";
+
+
+		DWORD read = 0;
+		cout << "before loop\n";
+		cout.flush();
+		while (ReadFile(h,buf,1,&read,NULL))
+		{
+			if (1 == read)
+			{
+				cout << (unsigned char)buf[0];
+				cout.flush();
+			}
+		}
+
 		cout << "Enter upto 7 characters to send : ";
 		cin.getline(buf, 8);
 
